@@ -1,0 +1,33 @@
+import type { BunFile } from 'bun';
+import type { ResponseOptions, CookieOptions, ResponseWrapper, AsJsonValue } from './types';
+export declare class ResponseUtils implements ResponseWrapper {
+    private readonly headers;
+    private _response;
+    private headerObjectCache;
+    constructor();
+    private headersToObject;
+    json<T>(data: AsJsonValue<T>, options?: ResponseOptions): Response;
+    text(text: string, options?: ResponseOptions): Response;
+    html(html: string, options?: ResponseOptions): Response;
+    redirect(url: string, options?: ResponseOptions): Response;
+    notFound(message?: string, options?: ResponseOptions): Response;
+    badRequest(message?: string, options?: ResponseOptions): Response;
+    serverError(message?: string, options?: ResponseOptions): Response;
+    created<T extends object = Record<string, any>>(data: T, options?: ResponseOptions): Response;
+    noContent(options?: ResponseOptions): Response;
+    file(data: Blob | ArrayBuffer | ReadableStream | BunFile, filename: string, options?: ResponseOptions): Response;
+    formData(data: FormData, options?: ResponseOptions): Response;
+    stream(stream: ReadableStream<Uint8Array>, options?: ResponseOptions): Response;
+    setCookie(name: string, value: string, options?: CookieOptions): void;
+    delCookie(name: string, options?: Omit<CookieOptions, 'maxAge' | 'sameSite'>): void;
+    private updateResponseHeaders;
+    appendHeader(name: string, value: string): void;
+    setHeader(name: string, value: string): void;
+    getHeader(name: string): string | null;
+    getAllHeaders(): Record<string, string>;
+    removeHeader(name: string): void;
+    setResponse(response: Response): void;
+    getResponse(): Response | null;
+    updateResponse(newResponse: Response): void;
+    private serializeCookie;
+}
