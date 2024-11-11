@@ -1,15 +1,3 @@
-# bunzai2
-
-To install dependencies:
-
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.1.34. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+<p align="center">
+  <img src="https://st4.depositphotos.com/10179844/19744/i/450/depositphotos_197440664-stock-photo-a-smoked-sausage-in-hand.jpg" alt="A smoked sausage in hand">
+</p>
