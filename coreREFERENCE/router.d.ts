@@ -1,5 +1,5 @@
 import type { Context, Handler, Route, HTTPMethod, Middleware, RouterStrategyType } from './types';
-export declare class Router {
+declare class Router {
     private strategy;
     private cache;
     constructor();
@@ -7,4 +7,4 @@ export declare class Router {
     handleRequest(path: string, method: HTTPMethod, context: Context): Promise<Response | undefined>;
     getRoutes(): Route[];
 }
-export default Router;
+export { Router };

@@ -1,21 +1,27 @@
-import type { ResponseOptions, CookieOptions, Context as IContext, JsonValue, AsJsonValue } from './types';
-import type { JSXElement, JSXChild, JSXResult, JSXComponent, JSXElementType } from './types';
+import type { ResponseOptions, CookieOptions, Context as IContext, AsJsonValue } from './types';
+import type { JSXElement, JSXChild, JSXResult, JSXComponent, JSXElementType, JSXProps } from './types';
 import type { BunFile } from 'bun';
 export declare class Context implements IContext {
     private readonly req;
     private readonly res;
     private params;
     private readonly locals;
-    private transpiler;
-    constructor(request: globalThis.Request);
+    private readonly transpiler;
+    constructor(request: Request);
     renderJSX(element: JSXElement): JSXResult;
-    createComponent<P extends Record<string, unknown>>(component: JSXComponent<P>): JSXComponent<P>;
-    jsx(type: JSXElementType, props: Record<string, unknown> | null, ...children: JSXChild[]): Response;
-    set<T extends JsonValue>(key: string, value: T): void;
-    get<T extends JsonValue>(key: string): T | undefined;
+    createComponent<P extends JSXProps>(component: JSXComponent<P>): JSXComponent<P & {
+        children?: JSXChild[];
+    }>;
+    jsx(type: JSXElementType, props: JSXProps | null, ...children: JSXChild[]): Response;
+    set<T>(key: string, value: T): void;
+    get<T>(key: string): T | undefined;
     has(key: string): boolean;
     delete(key: string): void;
-    getAll(): ReadonlyMap<string, JsonValue>;
+    getAll(): ReadonlyMap<string, {
+        type: string;
+        value: unknown;
+    }>;
+    getAllKeys(): string[];
     setParam(key: string, value: string): void;
     setParams(params: Record<string, string>): void;
     getParam(key: string): string | undefined;

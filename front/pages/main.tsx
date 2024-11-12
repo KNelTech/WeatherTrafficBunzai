@@ -1,15 +1,18 @@
-import { HelloComponent, AnotherComponent } from "../components/weatherContainer.tsx";
+import { weatherContainer, AnotherComponent } from "../components/weatherContainer.tsx";
 import type { JSXComponent, Context } from "bunzai";
 
 export const Main: JSXComponent = () => `
-  <html>
-    <head>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather Dashboard</title>
       <link rel="stylesheet" href="/styles/styles.css" />
     </head>
     <body>
       <div>
-        ${HelloComponent({ name: "Bunzai User" })}
-        ${AnotherComponent({ message: "This is another component" })}
+        ${weatherContainer({ name: "Dick head..." })}
+        ${AnotherComponent({ message: "Why are we still awake?" })}
       </div>
     </body>
   </html>

@@ -1,4 +1,5 @@
 import type { BunFile } from 'bun';
+import type { Bunzai } from './bunzai';
 export type Next = () => Promise<void>;
 export type Middleware = (c: Context, next: Next) => Promise<void | Response> | Response | void;
 export type Handler = (c: Context) => Promise<Response> | Response;
@@ -22,25 +23,36 @@ type DeepPartial<T> = T extends JsonPrimitive ? T : T extends Array<infer U> ? A
  */
 export type AsJsonValue<T> = DeepPartial<T> extends JsonValue ? DeepPartial<T> : never;
 type Primitive = string | number | boolean | null | undefined;
-export type JSXChild = JSXElement | Primitive;
-export type JSXElementType = string | JSXComponent<any>;
+export type JSXChild = JSXElement | Primitive | JSXChild[];
+export type JSXElementType = string | JSXComponent<any> | symbol | JSXFragment;
+export declare const Fragment: unique symbol;
 export interface JSXElement {
     type: JSXElementType;
-    props: Record<string, unknown>;
+    props: JSXProps;
     children: JSXChild[];
+    key?: string | number;
 }
+export type JSXProps = Record<string, unknown>;
 export type JSXResult = string;
-export type JSXComponent<P = Record<string, unknown>> = (props: P & {
-    children?: JSXChild[];
-}) => JSXResult;
+export type JSXFragment = typeof Fragment;
+export interface JSXComponent<P = JSXProps> {
+    (props: P & {
+        children?: JSXChild[];
+    }): JSXResult;
+    displayName?: string;
+}
+export declare class JSXRenderError extends Error {
+    component?: string | undefined;
+    constructor(message: string, component?: string | undefined);
+}
 export interface Route {
     regex?: RegExp;
     path: RegExp | string | undefined;
     method: HTTPMethod;
     handler: Handler;
-    params: string[];
+    params: Map<string, string>;
     originalPath: string;
-    keys: string[];
+    keys: Set<string>;
     middleware: Middleware[];
     routerStrategy: RouterStrategyType;
 }
@@ -48,7 +60,7 @@ export interface RouterStrategy {
     addRoute(method: HTTPMethod, path: string, handler: Handler, middleware: Middleware[], strategy: RouterStrategyType): void;
     findRoute(method: HTTPMethod, path: string, strategy: RouterStrategyType): {
         route: Route;
-        params: Record<string, string>;
+        params: Map<string, string>;
     } | undefined;
     getRoutes(): Route[];
     handleRequest(path: string, method: HTTPMethod, context: Context, strategy: RouterStrategyType): Promise<Response | undefined>;
@@ -113,7 +125,72 @@ export interface ResponseWrapper {
     setResponse(response: Response): void;
     getResponse(): Response | null;
 }
+/**
+ * The API that plugins can use to extend the behavior of a `Bunzai` app.
+ *
+ * @interface BunzaiPluginAPI
+ *
+ * @property {BunzaiPluginAPI['addMiddleware']} addMiddleware Adds middleware to be run globally or for a specific path.
+ * @property {BunzaiPluginAPI['addRoute']} addRoute Adds a route to the app.
+ * @property {BunzaiPluginAPI['extendContext']} extendContext Extends the `Context` object with additional properties.
+ * @property {BunzaiPluginAPI['registerNamespace']} registerNamespace Registers a namespace of functions that can be accessed from the `Context` object.
+ */
+export interface BunzaiPluginAPI {
+    /**
+     * Adds middleware to be run globally or for a specific path.
+     *
+     * @param {string} path - The path to register the middleware for. If not provided, the middleware is registered globally.
+     * @param {...Middleware} middlewares - The middleware to register.
+     */
+    addMiddleware: (path: string, ...middlewares: Middleware[]) => void;
+    /**
+     * Adds a route to the app.
+     *
+     * @param {HTTPMethod} method - The HTTP method for the route.
+     * @param {string} path - The path for the route.
+     * @param {...(Handler | Middleware)} handlers - The handlers for the route.
+     */
+    addRoute: (method: HTTPMethod, path: string, ...handlers: (Handler | Middleware)[]) => void;
+    /**
+     * Extends the `Context` object with additional properties.
+     *
+     * @param {Record<string, any>} extensions - The properties to add to the `Context` object.
+     */
+    extendContext: (extensions: Record<string, any>) => void;
+    /**
+     * Registers a namespace of functions that can be accessed from the `Context` object.
+     *
+     * @param {string} namespace - The namespace to register the functions for.
+     * @param {Record<string, Function>} methods - The functions to register.
+     */
+    registerNamespace: (namespace: string, methods: Record<string, Function>) => void;
+}
+export interface PluginOptions {
+    [key: string]: any;
+}
+/**
+ * A plugin is an object that provides a way to extend the behavior of a
+ * `Bunzai` app. Plugins can add middleware, routes, and context extensions to
+ * the app. Plugins can also depend on other plugins and will be installed in
+ * the correct order.
+ *
+ * @interface Plugin
+ *
+ * @property {string} name The name of the plugin.
+ * @property {string[]} [dependencies] The names of the plugins that this
+ * plugin depends on.
+ * @property {(app: Bunzai, api: BunzaiPluginAPI, options?: PluginOptions) => void | Promise<void>} install
+ * The install function is called when the plugin is installed. It is passed
+ * the `Bunzai` app, the `BunzaiPluginAPI` object, and an optional `options`
+ * object.
+ */
+export interface Plugin {
+    readonly name: string;
+    readonly dependencies?: string[];
+    readonly install: (app: Bunzai, api: BunzaiPluginAPI, options?: PluginOptions) => void | Promise<void>;
+}
 export interface Context {
+    [key: string]: any;
     /**
      * Renders a JSX element into a string.
      *
@@ -159,13 +236,15 @@ export interface Context {
      * @param value - The value to set. Can be any type.
      * @returns Nothing. This is a setter function.
      */
-    set<T extends JsonValue>(key: string, value: T): void;
+    set<T>(key: string, value: T): void;
     /**
      * Gets a value from the context.
      * @param key - The key to get. Must be a string.
      * @returns The value associated with the key, or undefined if the key does not exist.
+     * The type of the value is checked at runtime to ensure it matches the type you're trying to get.
+     * If the types don't match, or if the key does not exist, undefined is returned.
      */
-    get<T extends JsonValue>(key: string): T | undefined;
+    get<T>(key: string): T | undefined;
     /**
      * Checks if a value exists on the context.
      * @param key - The key to check. Must be a string.
@@ -179,10 +258,18 @@ export interface Context {
      */
     delete(key: string): void;
     /**
+     * Gets all keys from the context.
+     * @returns An array of all keys in the context.
+     */
+    getAllKeys(): string[];
+    /**
      * Gets all values from the context.
      * @returns A map of all values in the context.
+     * Each value is an object with a type property and a value property.
+     * The type property is the type of the value that was set,
+     * and the value property is the value that was set.
      */
-    getAll(): ReadonlyMap<string, JsonValue>;
+    getAll(): ReadonlyMap<string, unknown>;
     /**
      * Sets a route parameter. This will be used to populate the "params" object that is passed to route handlers.
      * @param key - The key of the route parameter.

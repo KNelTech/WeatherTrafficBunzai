@@ -9,6 +9,6 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "bunzai": "./vendor/bunzai-0.0.27.tgz"
+    "bunzai": "^0.0.29"
   }
 }

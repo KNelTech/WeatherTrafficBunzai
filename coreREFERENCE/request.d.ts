@@ -2,7 +2,7 @@ import { type RequestWrapper } from './types';
 export declare class RequestUtils implements RequestWrapper {
     private request;
     private _params;
-    constructor(request: globalThis.Request);
+    constructor(request: Request);
     get method(): string;
     get url(): string;
     get headers(): Headers;
