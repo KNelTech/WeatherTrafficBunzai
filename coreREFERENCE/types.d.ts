@@ -1,10 +1,11 @@
 import type { BunFile } from 'bun';
 import type { Bunzai } from './bunzai';
+export type MiddlewareTiming = 'pre' | 'post';
 export type Next = () => Promise<void>;
 export type Middleware = (c: Context, next: Next) => Promise<void | Response> | Response | void;
-export type Handler = (c: Context) => Promise<Response> | Response;
+export type Handler = (c: Context) => Promise<Response | string | object> | Response | string | object;
 export type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
-export type HttpStatus = 100 | 200 | 201 | 204 | 301 | 302 | 304 | 308 | 400 | 401 | 403 | 404 | 500 | 501 | 502 | 503 | 504;
+export type HttpStatus = Response['status'];
 export type RouterStrategyType = 'trie' | 'regexp';
 export type JsonPrimitive = string | number | boolean | null;
 export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
@@ -76,11 +77,102 @@ export type CookieOptions = {
     expires?: Date;
     maxAge?: number;
     sameSite?: 'Strict' | 'Lax' | 'None';
+    secrets?: string | string[];
 };
+/**
+ * A plugin is an object that provides a way to extend the behavior of a
+ * `Bunzai` app. Plugins can add middleware, routes, and context extensions to
+ * the app. Plugins can also depend on other plugins and will be installed in
+ * the correct order.
+ *
+ * @interface Plugin
+ *
+ * @property {string} name The name of the plugin.
+ * @property {string[]} [dependencies] The names of the plugins that this
+ * plugin depends on.
+ * @property {(app: Bunzai, api: BunzaiPluginAPI, options?: PluginOptions) => void | Promise<void>} install
+ * The install function is called when the plugin is installed. It is passed
+ * the `Bunzai` app, the `BunzaiPluginAPI` object, and an optional `options`
+ * object.
+ */
+export interface Plugin {
+    readonly name: string;
+    readonly version?: string;
+    readonly dependencies?: readonly PluginDependency[];
+    readonly install: (app: Bunzai, api: BunzaiPluginAPI, options?: PluginOptions) => void | Promise<void>;
+    uninstall?: (app: Bunzai) => void | Promise<void>;
+}
+export interface PluginDependency {
+    name: string;
+    version?: string;
+    optional?: boolean;
+}
+export interface BunzaiPluginAPI {
+    /**
+     * Adds middleware to be run globally or for a specific path.
+     *
+     * @param {string} [path] - The path to register the middleware for. If not provided, the middleware is registered globally.
+     * @param {...Middleware} middlewares - The middleware to register.
+     */
+    addMiddleware(path: string, ...middlewares: Middleware[]): void;
+    /**
+     * Extends the `Context` object with additional properties.
+     *
+     * @param {Record<string, any>} extensions - The properties to add to the `Context` object.
+     */
+    extendContext: (extensions: Record<string, any>) => void;
+    /**
+     * Registers a namespace of functions that can be accessed from the `Context` object.
+     *
+     * @param {string} namespace - The namespace to register the functions for.
+     * @param {Record<string, Function>} methods - The functions to register.
+     */
+    registerNamespace(namespace: string, methods: Record<string, Function>): void;
+    /**
+     * Returns an array of installed plugins.
+     * @returns {Plugin[]} installed plugins
+     */
+    getInstalledPlugins(): readonly Plugin[];
+    /**
+     * Returns a dependency graph of plugins, where the key is the plugin name and the value is an array of plugin names that this plugin depends on.
+     * @returns {Record<string, string[]>} the dependency graph
+     */
+    getPluginDependencyGraph: () => Readonly<Record<string, readonly PluginDependency[]>>;
+    /**
+     * Adds a route handler for GET requests.
+     *
+     * @param {string} path - The path to register the handler for.
+     * @param {...Handler | Middleware} handlers - The handler(s) to register.
+     */
+    addGetRoute(path: string, ...handlers: (Handler | Middleware)[]): void;
+    /**
+     * Adds a route handler for POST requests.
+     *
+     * @param {string} path - The path to register the handler for.
+     * @param {...Handler | Middleware} handlers - The handler(s) to register.
+     */
+    addPostRoute(path: string, ...handlers: (Handler | Middleware)[]): void;
+    /**
+     * Adds a route handler for DELETE requests.
+     *
+     * @param {string} path - The path to register the handler for.
+     * @param {...Handler | Middleware} handlers - The handler(s) to register.
+     */
+    addDeleteRoute(path: string, ...handlers: (Handler | Middleware)[]): void;
+}
+/**
+ * Options passed to a plugin.
+ *
+ * @interface PluginOptions
+ *
+ * @property {any} [key] - Any options passed to the plugin.
+ */
+export type PluginOptions = Record<string, unknown>;
 export interface RequestWrapper {
     method: string;
     url: string;
     headers: Headers;
+    getPathname(): string;
     reqHasHeader(name: string): boolean;
     reqHeader(name: string): string | null;
     reqAllHeaders(): Record<string, string>;
@@ -119,75 +211,13 @@ export interface ResponseWrapper {
     delCookie(name: string, options?: Omit<CookieOptions, 'maxAge' | 'sameSite'>): void;
     appendHeader(name: string, value: string): void;
     setHeader(name: string, value: string): void;
+    setHeaders(headers: Record<string, string>): void;
     getHeader(name: string): string | null;
     getAllHeaders(): Record<string, string>;
     removeHeader(name: string): void;
     setResponse(response: Response): void;
     getResponse(): Response | null;
-}
-/**
- * The API that plugins can use to extend the behavior of a `Bunzai` app.
- *
- * @interface BunzaiPluginAPI
- *
- * @property {BunzaiPluginAPI['addMiddleware']} addMiddleware Adds middleware to be run globally or for a specific path.
- * @property {BunzaiPluginAPI['addRoute']} addRoute Adds a route to the app.
- * @property {BunzaiPluginAPI['extendContext']} extendContext Extends the `Context` object with additional properties.
- * @property {BunzaiPluginAPI['registerNamespace']} registerNamespace Registers a namespace of functions that can be accessed from the `Context` object.
- */
-export interface BunzaiPluginAPI {
-    /**
-     * Adds middleware to be run globally or for a specific path.
-     *
-     * @param {string} path - The path to register the middleware for. If not provided, the middleware is registered globally.
-     * @param {...Middleware} middlewares - The middleware to register.
-     */
-    addMiddleware: (path: string, ...middlewares: Middleware[]) => void;
-    /**
-     * Adds a route to the app.
-     *
-     * @param {HTTPMethod} method - The HTTP method for the route.
-     * @param {string} path - The path for the route.
-     * @param {...(Handler | Middleware)} handlers - The handlers for the route.
-     */
-    addRoute: (method: HTTPMethod, path: string, ...handlers: (Handler | Middleware)[]) => void;
-    /**
-     * Extends the `Context` object with additional properties.
-     *
-     * @param {Record<string, any>} extensions - The properties to add to the `Context` object.
-     */
-    extendContext: (extensions: Record<string, any>) => void;
-    /**
-     * Registers a namespace of functions that can be accessed from the `Context` object.
-     *
-     * @param {string} namespace - The namespace to register the functions for.
-     * @param {Record<string, Function>} methods - The functions to register.
-     */
-    registerNamespace: (namespace: string, methods: Record<string, Function>) => void;
-}
-export interface PluginOptions {
-    [key: string]: any;
-}
-/**
- * A plugin is an object that provides a way to extend the behavior of a
- * `Bunzai` app. Plugins can add middleware, routes, and context extensions to
- * the app. Plugins can also depend on other plugins and will be installed in
- * the correct order.
- *
- * @interface Plugin
- *
- * @property {string} name The name of the plugin.
- * @property {string[]} [dependencies] The names of the plugins that this
- * plugin depends on.
- * @property {(app: Bunzai, api: BunzaiPluginAPI, options?: PluginOptions) => void | Promise<void>} install
- * The install function is called when the plugin is installed. It is passed
- * the `Bunzai` app, the `BunzaiPluginAPI` object, and an optional `options`
- * object.
- */
-export interface Plugin {
-    readonly name: string;
-    readonly dependencies?: string[];
-    readonly install: (app: Bunzai, api: BunzaiPluginAPI, options?: PluginOptions) => void | Promise<void>;
+    getStatus(): HttpStatus;
 }
 export interface Context {
     [key: string]: any;
@@ -532,6 +562,11 @@ export interface Context {
      */
     setHeader(name: string, value: string): void;
     /**
+     * Sets multiple headers on the response.
+     * @param headers - A Record of strings where the keys are the header names and the values are the header values.
+     */
+    setHeaders(headers: Record<string, string>): void;
+    /**
      * Gets the value of the specified header.
      * @param name - The name of the header to get. Must be a string.
      * @returns The value of the specified header, or null if the header does not exist.
@@ -560,6 +595,21 @@ export interface Context {
 }
 export interface App {
     /**
+     * Registers a plugin.
+     *
+     * @param {Plugin} plugin The plugin to register.
+     * @param {PluginOptions} [options] The options to pass to the plugin.
+     * @returns {this} The current instance of the app.
+     */
+    plugin: (plugin: Plugin, options?: PluginOptions) => Promise<this>;
+    /**
+     * Returns an object with functions registered by a plugin.
+     * @param {string} namespace - The namespace to get functions from.
+     * @returns {Record<string, Function>} The functions registered by the plugin.
+     * @throws {Error} If the namespace is not found.
+     */
+    usePlugin: (namespace: string) => Record<string, Function>;
+    /**
      * Mounts a static file server to the given path.
      * @param {string} path - The path prefix for the static files.
      * @param {string} staticDir - The directory to serve static files from.
@@ -573,7 +623,7 @@ export interface App {
      * @param {...Middleware} middlewares - Additional middlewares to register.
      * @returns {Bunzai} - The current instance of the app.
      */
-    use(pathOrMiddleware: string | Middleware, ...middlewares: Middleware[]): this;
+    use(pathOrMiddleware: string | Middleware, ...middlewares: (Middleware | MiddlewareTiming)[]): this;
     /**
      * Routes a sub-app to a specific path.
      *

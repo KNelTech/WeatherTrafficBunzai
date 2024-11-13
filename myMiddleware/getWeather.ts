@@ -1,48 +1,91 @@
 //https://www.weatherapi.com/my/
 
-const API_KEY = Bun.env.API_TOKEN; 
+const API_KEY = Bun.env.API_TOKEN;
 
 
 
-async function fetchWeather(zipCode: string) {
-    const url = `https://api.weatherapi.com/v1/current.json?q=${zipCode}&key=${API_KEY}`;
+This api is fuckin dogwater. I wouldnt even slap your mom with It. fuck this tomorrow were doing weatherstack
+
+
+// async function fetchWeather(zipCode: string) {
+//     const url = `https://api.weatherapi.com/v1/forecast.json?q=${zipCode}&days=7&alerts=no&aqi=no&key=${API_KEY}`;
+
+//     try {
+//         const response = await fetch(url, {
+//             method: 'GET',
+//             headers: {
+//                 'accept': 'application/json'
+//             }
+//         });
+
+//         if (!response.ok) {
+//             const errorText = await response.text();
+//             throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+//         }
+
+//         return response.json();
+//     } catch (error) {
+//         console.error('Error fetching weather data:', error);
+//         throw error;
+//     }
+// }
+
+// export async function getWeatherForDisplay() {
+//     const zipCodes = ['60639', '60143', '60607'];
+
+//     try {
+//         const weatherPromises = zipCodes.map(zipCode => fetchWeather(zipCode));
+//         const weatherResults = await Promise.all(weatherPromises);
+
+//         return weatherResults;
+//     } catch (error) {
+//         console.error('Error fetching weather data:', error);
+//         throw error;
+//     }
+// }
+
+
+
+
+// async function fetchWeather(zipCode: string) {
+//     const url = `https://api.weatherapi.com/v1/current.json?q=${zipCode}&key=${API_KEY}`;
     
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'accept': 'application/json'
-      }
-    });
+//     const response = await fetch(url, {
+//       method: 'GET',
+//       headers: {
+//         'accept': 'application/json'
+//       }
+//     });
   
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+//     if (!response.ok) {
+//       throw new Error(`HTTP error! status: ${response.status}`);
+//     }
   
-    return response.json();
-  }
+//     return response.json();
+//   }
   
-  function cleanWeatherData(data: any) {
-    return {
-      location: data.location.name,
-      temperature: data.current.temp_c,
-      condition: data.current.condition.text,
-      icon: data.current.condition.icon
-    };
-  }
+//   function cleanWeatherData(data: any) {
+//     return {
+//       location: data.location.name,
+//       temperature: data.current.temp_c,
+//       condition: data.current.condition.text,
+//       icon: data.current.condition.icon
+//     };
+//   }
   
-  export async function getWeatherForDisplay() {
-    const zipCodes = ['60639', '60143', '60607']; 
+//   export async function getWeatherForDisplay() {
+//     const zipCodes = ['60639', '60143', '60607']; 
   
-    try {
-      const weatherPromises = zipCodes.map(zipCode => fetchWeather(zipCode));
-      const weatherResults = await Promise.all(weatherPromises);
+//     try {
+//       const weatherPromises = zipCodes.map(zipCode => fetchWeather(zipCode));
+//       const weatherResults = await Promise.all(weatherPromises);
   
-      return weatherResults.map(cleanWeatherData);
-    } catch (error) {
-      console.error('Error fetching weather data:', error);
-      throw error;
-    }
-  }
+//       return weatherResults.map(cleanWeatherData);
+//     } catch (error) {
+//       console.error('Error fetching weather data:', error);
+//       throw error;
+//     }
+//   }
 
 
   // front? I guess? I'm TIRED

@@ -1,3 +1,4 @@
 import { Router } from './router';
 import { MiddlewareHandler } from './mwHandler';
-export declare function handleRequest(req: Request, router: Router, middlewareHandler: MiddlewareHandler): Promise<Response>;
+import { StaticHandler } from './staticHandler';
+export declare function handleRequest(req: Request, router: Router, middlewareHandler: MiddlewareHandler, staticHandlers: StaticHandler[]): Promise<Response>;

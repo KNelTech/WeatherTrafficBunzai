@@ -1,12 +1,11 @@
 import type { ResponseOptions, CookieOptions, Context as IContext, AsJsonValue } from './types';
-import type { JSXElement, JSXChild, JSXResult, JSXComponent, JSXElementType, JSXProps } from './types';
+import type { JSXElement, JSXChild, JSXResult, JSXComponent, JSXElementType, JSXProps, HttpStatus } from './types';
 import type { BunFile } from 'bun';
 export declare class Context implements IContext {
     private readonly req;
     private readonly res;
     private params;
     private readonly locals;
-    private readonly transpiler;
     constructor(request: Request);
     renderJSX(element: JSXElement): JSXResult;
     createComponent<P extends JSXProps>(component: JSXComponent<P>): JSXComponent<P & {
@@ -29,6 +28,7 @@ export declare class Context implements IContext {
     getResponse(): Response;
     setResponse(response: Response): this;
     updateResponse(newResponse: Response): void;
+    getPathname(): string;
     getMethod(): string;
     getUrl(): string;
     getHeaders(): Headers;
@@ -41,6 +41,7 @@ export declare class Context implements IContext {
     reqFormData(): Promise<FormData>;
     hasBody(): boolean;
     isJson(): boolean;
+    isHtml(): boolean;
     isFormData(): boolean;
     param(key: string): string | null;
     query(): Record<string, string | string[]>;
@@ -62,8 +63,10 @@ export declare class Context implements IContext {
     delCookie(name: string, options?: Omit<CookieOptions, 'maxAge' | 'sameSite'>): void;
     appendHeader(name: string, value: string): void;
     setHeader(name: string, value: string): void;
+    setHeaders(headers: Record<string, string>): void;
     getHeader(name: string): string | null;
     getAllHeaders(): Record<string, string>;
     removeHeader(name: string): void;
     noContent(options?: ResponseOptions): Response;
+    getStatus(): HttpStatus;
 }

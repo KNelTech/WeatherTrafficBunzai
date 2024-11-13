@@ -1,27 +1,19 @@
-import type { Middleware, Handler, App, Context as ContextType, RouteHandler, Plugin, PluginOptions } from './types';
-interface StaticOptions {
-    spa?: boolean;
-    index?: string;
-}
+import type { StaticOptions } from './staticHandler';
+import type { Middleware, MiddlewareTiming, Handler, App, Context as ContextType, RouteHandler, Plugin, PluginOptions } from './types';
 declare class Bunzai implements App {
     private readonly router;
-    private readonly middlewareHandler;
     private readonly baseDir;
-    private readonly plugins;
-    private readonly installedPlugins;
-    private namespaces;
+    private staticHandlers;
+    private readonly pluginManager;
+    private readonly middlewareHandler;
     constructor();
-    getInstalledPlugins(): Plugin[];
-    getPluginDependencyGraph(): Record<string, string[]>;
     private addRoute;
     private handleRouteHandler;
-    private createPluginAPI;
-    private installPlugin;
     handleRequest(req: Request): Promise<Response>;
-    static(path: string, staticDir: string, options?: StaticOptions): this;
-    use(pathOrMiddleware: string | Middleware, ...middlewares: Middleware[]): this;
-    plugin(plugin: Plugin, options?: PluginOptions): this;
+    plugin(plugin: Plugin, options?: PluginOptions): Promise<this>;
     usePlugin(namespace: string): Record<string, Function>;
+    static(path: string, staticDir: string, options?: StaticOptions): this;
+    use(pathOrMiddleware: string | Middleware, ...middlewares: (Middleware | MiddlewareTiming)[]): this;
     group(...middlewares: Middleware[]): Middleware;
     useWhen(condition: (c: ContextType) => boolean, ...middlewares: Middleware[]): this;
     route(basePath: string, ...subApps: Bunzai[]): this;

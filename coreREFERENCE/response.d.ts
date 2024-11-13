@@ -1,11 +1,22 @@
 import type { BunFile } from 'bun';
-import type { ResponseOptions, CookieOptions, ResponseWrapper, AsJsonValue } from './types';
+import type { JSXElement, JSXChild, JSXResult, JSXComponent, JSXElementType, JSXProps, ResponseOptions, CookieOptions, ResponseWrapper, AsJsonValue, HttpStatus } from './types';
 export declare class ResponseUtils implements ResponseWrapper {
-    private readonly headers;
+    private headers;
     private _response;
-    private headerObjectCache;
+    private transpiler;
     constructor();
+    private defaultOptions;
+    private mergeOptions;
+    createResponse(body: BodyInit | null, options?: ResponseOptions): Response;
+    private handleError;
+    private updateInternalResponse;
+    private serializeCookie;
     private headersToObject;
+    renderJSX(element: JSXElement): JSXResult;
+    createComponent<P extends JSXProps>(component: JSXComponent<P>): JSXComponent<P & {
+        children?: JSXChild[];
+    }>;
+    jsx(type: JSXElementType, props: JSXProps | null, ...children: JSXChild[]): Response;
     json<T>(data: AsJsonValue<T>, options?: ResponseOptions): Response;
     text(text: string, options?: ResponseOptions): Response;
     html(html: string, options?: ResponseOptions): Response;
@@ -20,14 +31,14 @@ export declare class ResponseUtils implements ResponseWrapper {
     stream(stream: ReadableStream<Uint8Array>, options?: ResponseOptions): Response;
     setCookie(name: string, value: string, options?: CookieOptions): void;
     delCookie(name: string, options?: Omit<CookieOptions, 'maxAge' | 'sameSite'>): void;
-    private updateResponseHeaders;
     appendHeader(name: string, value: string): void;
     setHeader(name: string, value: string): void;
+    setHeaders(headers: Record<string, string>): void;
     getHeader(name: string): string | null;
     getAllHeaders(): Record<string, string>;
     removeHeader(name: string): void;
     setResponse(response: Response): void;
     getResponse(): Response | null;
+    getStatus(): HttpStatus;
     updateResponse(newResponse: Response): void;
-    private serializeCookie;
 }
