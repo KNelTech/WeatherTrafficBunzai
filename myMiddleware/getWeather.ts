@@ -9,7 +9,7 @@ interface Location {
 }
 
 interface CleanedForecastItem {
-  dt: number;
+  cst: string;
   temp: number;
   feels_like: number;
   description: string;
@@ -26,17 +26,6 @@ const locations: Location[] = [
   { name: "Home", lat: 41.924940, lon: -87.776010 }
 ];
 
-function convertUnixToCSTTime(unixTime: number): string {
-  const cstDate = new Date(unixTime * 1000);
-  const cstFormatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/Chicago',
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: true,
-  });
-  return cstFormatter.format(cstDate);
-}
-
 async function fetchWeatherForecast(location: Location) {
   const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${location.lat}&lon=${location.lon}&cnt=8&units=imperial&appid=${API_TOKEN}&units=metric`;
   
@@ -49,7 +38,7 @@ async function fetchWeatherForecast(location: Location) {
   const data = await response.json();
 
   const cleanedData: CleanedForecastItem[] = data.list.map((item: any) => ({
-    cst_time: convertUnixToCSTTime(item.dt),
+    cst: new Date(item.dt * 1000).toLocaleString(),
     temp: item.main.temp,
     feels_like: item.main.feels_like,
     main_condition: item.weather[0].main,
