@@ -9,15 +9,25 @@ interface Location {
 }
 
 interface CleanedForecastItem {
-  cst: string;
-  temp: number;
-  feels_like: number;
-  description: string;
-  wind_speed: number;
-  precipitation_chance: number;
-  main_condition: string;
-  rain?: number;
-  snow?: number;
+  dt: number;
+  main: {
+    temp: number;
+    feels_like: number;
+    condition: string;
+  };
+  weather: {
+    description: string;                   
+  }[];
+  wind: {
+    speed: number;
+  };
+  pop: number;
+  rain?: {
+    '3h': number;
+  };
+  snow?: {
+    '3h': number;
+  };
 }
 
 const locations: Location[] = [
@@ -37,7 +47,7 @@ async function fetchWeatherForecast(location: Location) {
 
   const data = await response.json();
 
-  const cleanedData: CleanedForecastItem[] = data.list.map((item: any) => ({
+  const cleanedData: CleanedForecastItem[] = data.list.map((item: CleanedForecastItem) => ({
     cst: new Date(item.dt * 1000).toLocaleString(),
     temp: item.main.temp,
     feels_like: item.main.feels_like,
