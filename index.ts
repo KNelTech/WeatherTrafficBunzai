@@ -1,7 +1,7 @@
 import { Bunzai, Logger } from "bunzai";
 import type { JSXComponent, Context, Next, Middleware } from "bunzai";
 import { Main } from "./front/pages/main.tsx";
-import { getWeatherForDisplay } from "./myMiddleware/getWeather.ts";
+import { GetWeather } from "./myMiddleware/getWeather.ts";
 
 const app = new Bunzai();
 
@@ -16,7 +16,7 @@ app.get("/", (c: Context) => {
 // New route for weather API
 app.get("/api/display-weather", async (c: Context) => {
   try {
-    const weatherData = await getWeatherForDisplay();
+    const weatherData = await new GetWeather().getWeatherForDisplay();
     return c.json(weatherData);
   } catch (error) {
     console.error('Error fetching display weather data:', error);
