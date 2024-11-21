@@ -1,16 +1,21 @@
-import type { Context, Handler, Route, HTTPMethod, Middleware, RouterStrategyType } from './types';
-declare class Router {
-    private strategy;
-    private cache;
+import type { Context as ContextType, Handler, Route, HTTPMethod, Middleware, IRouter } from './types';
+declare class Router implements IRouter {
+    private root;
+    private routeCache;
+    private regexCache;
     constructor();
-    addRoute(method: HTTPMethod, path: string, handler: Handler, middleware?: Middleware[], strategy?: RouterStrategyType): this;
-    handleRequest(path: string, method: HTTPMethod, context: Context): Promise<Response | undefined>;
+    private parseRegexRoute;
+    private createRoute;
+    addRoute(method: HTTPMethod, path: string, handler: Handler, middleware?: Middleware[]): IRouter;
+    findRoute(method: HTTPMethod, path: string): {
+        route: Route;
+        params: Map<string, string>;
+    } | undefined;
     getRoutes(): Route[];
-    private getCacheKey;
-    private getCachedRoute;
-    private findRoute;
-    private cacheRoute;
-    private handleRouteResult;
+    handleRequest(path: string, method: HTTPMethod, context: ContextType): Promise<Response | undefined>;
+    private ensureChildNode;
     private runMiddlewareAndHandler;
+    private processHandlerResult;
+    private isHtml;
 }
 export { Router };

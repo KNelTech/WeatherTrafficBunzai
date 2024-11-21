@@ -1,20 +1,15 @@
-import type { StaticOptions } from './staticHandler';
-import type { Middleware, MiddlewareTiming, Handler, App, Context as ContextType, RouteHandler, Plugin, PluginOptions } from './types';
-declare class Bunzai implements App {
+import type { App, BunzaiConfig, Context as ContextType, Handler, Middleware, MiddlewareTiming, Plugin, PluginOptions, RouteHandler } from './types';
+export declare class Bunzai implements App {
     private readonly router;
-    private readonly baseDir;
-    private staticHandlers;
     private readonly pluginManager;
     private readonly middlewareHandler;
-    constructor();
+    constructor(config?: BunzaiConfig);
     private addRoute;
     private handleRouteHandler;
     handleRequest(req: Request): Promise<Response>;
-    plugin(plugin: Plugin, options?: PluginOptions): Promise<this>;
+    plugin(plugin: Plugin, options?: PluginOptions): this;
     usePlugin(namespace: string): Record<string, Function>;
-    static(path: string, staticDir: string, options?: StaticOptions): this;
     use(pathOrMiddleware: string | Middleware, ...middlewares: (Middleware | MiddlewareTiming)[]): this;
-    group(...middlewares: Middleware[]): Middleware;
     useWhen(condition: (c: ContextType) => boolean, ...middlewares: Middleware[]): this;
     route(basePath: string, ...subApps: Bunzai[]): this;
     routeHandler(routeHandlers: RouteHandler): this;
@@ -34,4 +29,3 @@ declare class Bunzai implements App {
         hostname: string;
     }>;
 }
-export { Bunzai };

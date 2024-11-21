@@ -1,5 +1,27 @@
 import Bun from 'bun';
-import type { JSXChild, JSXComponent, JSXElement, JSXElementType, JSXResult, JSXProps } from './types';
+type Primitive = string | number | boolean | null | undefined;
+export type JSXChild = JSXElement | Primitive | JSXChild[];
+export type JSXElementType = string | JSXComponent<any> | symbol | JSXFragment;
+export declare const Fragment: unique symbol;
+export interface JSXElement {
+    type: JSXElementType;
+    props: JSXProps;
+    children: JSXChild[];
+    key?: string | number;
+}
+export type JSXProps = Record<string, unknown>;
+export type JSXResult = string;
+export type JSXFragment = typeof Fragment;
+export interface JSXComponent<P = JSXProps> {
+    (props: P & {
+        children?: JSXChild[];
+    }): JSXResult;
+    displayName?: string;
+}
+export declare class JSXRenderError extends Error {
+    component?: string | undefined;
+    constructor(message: string, component?: string | undefined);
+}
 declare class BunzaiTranspiler {
     private readonly transpiler;
     private readonly componentCache;
@@ -7,9 +29,10 @@ declare class BunzaiTranspiler {
     private readonly renderCache;
     private readonly eventHandlers;
     private readonly childrenCache;
-    private static readonly VOID_ELEMENTS;
-    static readonly EMPTY_RESULT: string;
     constructor(options?: Bun.TranspilerOptions);
+    private static readonly EMPTY_RESULT;
+    private static readonly VOID_ELEMENTS;
+    private getCacheKey;
     private handleEvent;
     private escapeHtml;
     private serializeProps;

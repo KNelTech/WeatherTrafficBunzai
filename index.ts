@@ -1,11 +1,13 @@
-import { Bunzai, Logger } from "bunzai";
+import { Bunzai, jsxPlugin, Logger, staticPlugin  } from "bunzai";
 import type { JSXComponent, Context, Next, Middleware } from "bunzai";
 import { Main } from "./front/pages/main.tsx";
 import { GetWeather } from "./myMiddleware/getWeather.ts";
 
-const app = new Bunzai();
 
-app.static("/styles", "front/styles");
+const app = new Bunzai({errorHandler: true})
+.plugin(jsxPlugin());
+
+app.plugin(staticPlugin('/styles', 'front/styles'));
 
 app.use(Logger());
 
