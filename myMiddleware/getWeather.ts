@@ -1,5 +1,6 @@
 // //https://home.openweathermap.org/
 
+
 interface WeatherResponse {
   list: {
     dt: number;
