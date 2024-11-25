@@ -1,4 +1,86 @@
 body {
-  background-color: black;
-  color: white;
+  font-family: Arial, sans-serif;
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+  margin: 0;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.weather-section {
+  width: calc(33.33% - 20px);
+  margin-bottom: 40px;
+}
+
+h2 {
+  width: 100%;
+  text-align: center;
+  color: #4a90e2;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.weather-card {
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.weather-card p {
+  margin: 10px 0;
+}
+
+.time {
+  font-weight: bold;
+  color: #4a90e2;
+}
+
+.temperature {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.feels-like {
+  font-size: 18px;
+  color: #bbb;
+}
+
+.description {
+  text-transform: capitalize;
+  color: #ffd700;
+}
+
+.wind,
+.precipitation {
+  font-size: 14px;
+  color: #bbb;
+}
+
+.rain,
+.snow {
+  color: #4a90e2;
+}
+
+@media (max-width: 900px) {
+  .weather-section {
+    width: calc(50% - 15px);
+  }
+}
+
+@media (max-width: 600px) {
+  .weather-section {
+    width: 100%;
+  }
 }
