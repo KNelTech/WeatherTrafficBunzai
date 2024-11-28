@@ -181,7 +181,7 @@ export const Main: JSXComponent<{ data: WeatherData }> = ({ data }) => `
     <link rel="stylesheet" href="front/styles.css" />
   </head>
   <body>
-    <div class="container">
+    <div class="weatherContainer">
       ${dianasWork({ data: data["Diana's work"] || [] })}
       ${kodisWork({ data: data["Kodi's work"] || [] })}
       ${home({ data: data['Home'] || [] })}
