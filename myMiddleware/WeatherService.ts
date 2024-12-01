@@ -106,53 +106,9 @@ export class WeatherService {
   }
 }
 
-const dianasWork: JSXComponent<{ data: WeatherEntry[] }> = ({ data }) => `
+const WeatherLocation: JSXComponent<{ data: WeatherEntry[]; locationName: string }> = ({ data, locationName }) => `
   <div>
-    <h2>Diana's Work</h2>
-    ${data
-      .map(
-        (entry) => `
-      <div class="weather-card">
-        <p class="time">Time: ${entry.cst}</p>
-        <p class="temperature">Temperature: ${entry.temp}°F</p>
-        <p>Feels like: ${entry.feels_like}°F</p>
-        <p class="description">${entry.description}</p>
-        <p class="wind">Wind Speed: ${entry.wind_speed} mph</p>
-        <p class="precipitation">Chance of Precipitation: ${Math.round(entry.pop * 100)}%</p>
-        ${entry.rain ? `<p class="rain">Rain: ${entry.rain} mm</p>` : ''}
-        ${entry.snow ? `<p class="snow">Snow: ${entry.snow} mm</p>` : ''}
-      </div>
-    `
-      )
-      .join('')}
-  </div>
-`
-
-const kodisWork: JSXComponent<{ data: WeatherEntry[] }> = ({ data }) => `
-  <div>
-    <h2>Kodi's Work</h2>
-    ${data
-      .map(
-        (entry) => `
-      <div class="weather-card">
-        <p class="time">Time: ${entry.cst}</p>
-        <p class="temperature">Temperature: ${entry.temp}°F</p>
-        <p class="feels-like">Feels like: ${entry.feels_like}°F</p>
-        <p class="description">${entry.description}</p>
-        <p class="wind">Wind Speed: ${entry.wind_speed} mph</p>
-        <p class="precipitation">Chance of Precipitation: ${Math.round(entry.pop * 100)}%</p>
-        ${entry.rain ? `<p class="rain">Rain: ${entry.rain} mm</p>` : ''}
-        ${entry.snow ? `<p class="snow">Snow: ${entry.snow} mm</p>` : ''}
-      </div>
-    `
-      )
-      .join('')}
-  </div>
-`
-
-const home: JSXComponent<{ data: WeatherEntry[] }> = ({ data }) => `
-  <div>
-    <h2>Home</h2>
+    <h2>${locationName}</h2>
     ${data
       .map(
         (entry) => `
@@ -174,6 +130,7 @@ const home: JSXComponent<{ data: WeatherEntry[] }> = ({ data }) => `
 
 export const Main: JSXComponent<{ data: WeatherData }> = ({ data }) => `
   <!DOCTYPE html>
+  <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -181,11 +138,10 @@ export const Main: JSXComponent<{ data: WeatherData }> = ({ data }) => `
     <link rel="stylesheet" href="front/styles.css" />
   </head>
   <body>
-    <div class="weatherContainer">
-      ${dianasWork({ data: data["Diana's work"] || [] })}
-      ${kodisWork({ data: data["Kodi's work"] || [] })}
-      ${home({ data: data['Home'] || [] })}
+    <div class="weather-container">
+      ${WeatherLocation({ data: data["Diana's work"] || [], locationName: "Diana's Work" })}
+      ${WeatherLocation({ data: data["Kodi's work"] || [], locationName: "Kodi's Work" })}
+      ${WeatherLocation({ data: data['Home'] || [], locationName: 'Home' })}
     </div>
   </body>
-  </html>
-`
+  </html>`
